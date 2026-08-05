@@ -355,7 +355,7 @@ void gs_duplicator::Start()
 		};
 		hr = output5->DuplicateOutput1(temp_device, 0, _countof(supportedFormats), supportedFormats,
 					       temp_duplicator.Assign());
-		if (FAILED(hr))
+		if (FAILED(hr)) {
 			throw HRError("Failed to DuplicateOutput1", hr);
 		}
 		DXGI_OUTPUT_DESC desc;
@@ -371,7 +371,7 @@ void gs_duplicator::Start()
 		}
 
 		hr = output1->DuplicateOutput(temp_device, temp_duplicator.Assign());
-		if (FAILED(hr))
+		if (FAILED(hr)) {
 			throw HRError("Failed to DuplicateOutput", hr);
 		}
 	}
