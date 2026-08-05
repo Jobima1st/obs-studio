@@ -29,8 +29,9 @@ static inline bool get_monitor(gs_device_t *device, int monitor_idx, IDXGIOutput
 
 	hr = device->adapter->EnumOutputs(monitor_idx, dxgiOutput);
 	if (FAILED(hr)) {
-		if (hr == DXGI_ERROR_NOT_FOUND)
+		if (hr == DXGI_ERROR_NOT_FOUND) {
 			return false;
+		}
 
 		throw HRError("Failed to get output", hr);
 	}
@@ -326,8 +327,9 @@ void gs_duplicator::Start()
 	ComPtr<IDXGIOutput1> output1;
 	ComPtr<IDXGIOutput> output;
 
-	if (!get_monitor(device, idx, output.Assign()))
+	if (!get_monitor(device, idx, output.Assign())) {
 		throw "Invalid monitor index";
+	}
 
 	constexpr D3D_FEATURE_LEVEL featureLevels[] = {
 		D3D_FEATURE_LEVEL_11_0,
@@ -355,6 +357,7 @@ void gs_duplicator::Start()
 					       temp_duplicator.Assign());
 		if (FAILED(hr))
 			throw HRError("Failed to DuplicateOutput1", hr);
+		}
 		DXGI_OUTPUT_DESC desc;
 		if (SUCCEEDED(output->GetDesc(&desc))) {
 			gs_monitor_color_info info = device->GetMonitorColorInfo(desc.Monitor);
@@ -363,12 +366,14 @@ void gs_duplicator::Start()
 		}
 	} else {
 		hr = output->QueryInterface(IID_PPV_ARGS(output1.Assign()));
-		if (FAILED(hr))
+		if (FAILED(hr)) {
 			throw HRError("Failed to query IDXGIOutput1", hr);
+		}
 
 		hr = output1->DuplicateOutput(temp_device, temp_duplicator.Assign());
 		if (FAILED(hr))
 			throw HRError("Failed to DuplicateOutput", hr);
+		}
 	}
 
 	unsigned unused;
@@ -447,12 +452,14 @@ EXPORT bool device_get_duplicator_monitor_info(gs_device_t *device, int monitor_
 	try {
 		ComPtr<IDXGIOutput> output;
 
-		if (!get_monitor(device, monitor_idx, output.Assign()))
+		if (!get_monitor(device, monitor_idx, output.Assign())) {
 			return false;
+		}
 
 		hr = output->GetDesc(&desc);
-		if (FAILED(hr))
+		if (FAILED(hr)) {
 			throw HRError("GetDesc failed", hr);
+		}
 
 	} catch (const HRError &error) {
 		blog(LOG_ERROR,
@@ -499,14 +506,16 @@ EXPORT int device_duplicator_get_monitor_index(gs_device_t *device, void *monito
 	while (index == -1) {
 		IDXGIOutput *pOutput;
 		const HRESULT hr = device->adapter->EnumOutputs(output, &pOutput);
-		if (hr == DXGI_ERROR_NOT_FOUND)
+		if (hr == DXGI_ERROR_NOT_FOUND) {
 			break;
+		}
 
 		if (SUCCEEDED(hr)) {
 			DXGI_OUTPUT_DESC desc;
 			if (SUCCEEDED(pOutput->GetDesc(&desc))) {
-				if (desc.Monitor == handle)
+				if (desc.Monitor == handle) {
 					index = output;
+				}
 			} else {
 				blog(LOG_ERROR,
 				     "device_duplicator_get_monitor_index: "
