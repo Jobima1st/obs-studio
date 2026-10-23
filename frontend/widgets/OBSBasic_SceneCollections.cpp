@@ -1021,12 +1021,9 @@ static void LoadAudioDevice(const char *name, int channel, obs_data_t *parent)
 	const char *source_name = obs_source_get_name(source);
 	blog(LOG_INFO, "[Loaded global audio device]: '%s'", source_name);
 	obs_source_enum_filters(source, LogFilter, (void *)(intptr_t)1);
-	obs_monitoring_type monitoring_type = obs_source_get_monitoring_type(source);
-	if (monitoring_type != OBS_MONITORING_TYPE_NONE) {
-		const char *type = (monitoring_type == OBS_MONITORING_TYPE_MONITOR_ONLY) ? "monitor only"
-											 : "monitor and output";
-
-		blog(LOG_INFO, "    - monitoring: %s", type);
+	bool monitoring = obs_source_get_monitoring_enabled(source);
+	if (monitoring) {
+		blog(LOG_INFO, "    - monitoring: enabled");
 	}
 }
 
@@ -1064,7 +1061,8 @@ static void LogFilter(obs_source_t *, obs_source_t *filter, void *v_val)
 		indent += "    ";
 	}
 
-	blog(LOG_INFO, "%s- filter: '%s' (%s)", indent.c_str(), name, id);
+	blog(LOG_INFO, "%s- filter: '%s' (%s)%s", indent.c_str(), name, id,
+	     obs_source_enabled(filter) ? "" : " (disabled)");
 }
 
 static bool LogSceneItem(obs_scene_t *, obs_sceneitem_t *item, void *v_val)
@@ -1079,15 +1077,13 @@ static bool LogSceneItem(obs_scene_t *, obs_sceneitem_t *item, void *v_val)
 		indent += "    ";
 	}
 
-	blog(LOG_INFO, "%s- source: '%s' (%s)", indent.c_str(), name, id);
+	blog(LOG_INFO, "%s- source: '%s' (%s)%s", indent.c_str(), name, id,
+	     obs_sceneitem_visible(item) ? "" : " (disabled)");
 
-	obs_monitoring_type monitoring_type = obs_source_get_monitoring_type(source);
+	bool monitoring = obs_source_get_monitoring_enabled(source);
 
-	if (monitoring_type != OBS_MONITORING_TYPE_NONE) {
-		const char *type = (monitoring_type == OBS_MONITORING_TYPE_MONITOR_ONLY) ? "monitor only"
-											 : "monitor and output";
-
-		blog(LOG_INFO, "    %s- monitoring: %s", indent.c_str(), type);
+	if (monitoring) {
+		blog(LOG_INFO, "    %s- monitoring: enabled", indent.c_str());
 	}
 	int child_indent = 1 + indent_count;
 	obs_source_enum_filters(source, LogFilter, (void *)(intptr_t)child_indent);
