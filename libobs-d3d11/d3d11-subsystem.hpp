@@ -724,6 +724,7 @@ struct gs_vertex_shader : gs_shader {
 
 	std::vector<D3D11_INPUT_ELEMENT_DESC> layoutData;
 
+	bool hasPositions;
 	bool hasNormals;
 	bool hasColors;
 	bool hasTangents;
@@ -740,7 +741,10 @@ struct gs_vertex_shader : gs_shader {
 
 	inline uint32_t NumBuffersExpected() const
 	{
-		uint32_t count = nTexUnits + 1;
+		uint32_t count = nTexUnits;
+		if (hasPositions) {
+			count++;
+		}
 		if (hasNormals) {
 			count++;
 		}
